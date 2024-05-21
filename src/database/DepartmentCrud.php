@@ -1,33 +1,32 @@
 <?php
-include 'DatabaseManager.php';
-include '../models/Department.php';
+include_once 'dbmanager.php';
+include_once dirname(__DIR__) . '/models/Department.php';
 
 class DepartmentCrud
 {
-    public array $departments;
 
     function getAllDepartments(): array
     {
         $conn = establishConnection();
+        $departments = [];
         try {
             $result = $conn->query("SELECT * FROM `department`");
             if ($result && $result->num_rows > 0) {
-                $data = $result->fetch_all();
+                $data = $result->fetch_all(MYSQLI_ASSOC);
                 foreach ($data as $department) {
                     $temp = new Department();
-                    $temp->setId($department[0]);
-                    $temp->setName($department[1]);
-                    $this->departments[] = $temp;
+                    $temp->setId($department["id"]);
+                    $temp->setName($department["name"]);
+                    $departments[] = $temp;
                 }
-                print_r($this->departments);
-                return $this->departments;
+                return $departments;
             }
         } catch (exception $e) {
             echo $e->getMessage();
         } finally {
             $conn->close();
         }
-        return [];
+        return $departments;
     }
 
     function addDepartment(string $name): bool
@@ -43,6 +42,3 @@ class DepartmentCrud
         return (bool)$result;
     }
 }
-
-$temp = new DepartmentCrud();
-$temp->getAllDepartments();

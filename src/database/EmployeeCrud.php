@@ -1,6 +1,6 @@
 <?php
-include 'DatabaseManager.php';
-include '../models/Employee.php';
+include_once 'dbmanager.php';
+include_once dirname(__DIR__) . '/models/Employee.php';
 
 class EmployeeCrud
 {
@@ -21,9 +21,9 @@ class EmployeeCrud
                     $temp->setEmail($employee["email"]);
                     $temp->setDepartment($employee["department_id"]);
                     $temp->setImage($employee["picture"]);
+                    $temp->setAbout($employee["about"]);
                     $employees[] = $temp;
                 }
-                print_r($employees);
                 return $employees;
             }
         } catch (exception $e) {
@@ -34,12 +34,11 @@ class EmployeeCrud
         return $employees;
     }
 
-    function insertEmployee($email, $name, $department_id, $picture): bool
+    function insertEmployee($email, $name, $department_id, $about, $picture): bool
     {
         $conn = establishConnection();
         try {
-            //Todo: save picture
-            $result = $conn->query("INSERT INTO employee (email,name,department_id,picture) VALUES ('$email','$name','$department_id','NoImage')");
+            $result = $conn->query("INSERT INTO employee (email,name,department_id,about,picture) VALUES ('$email','$name','$department_id','$about','$picture')");
         } catch (exception $e) {
             echo $e->getMessage();
         } finally {
@@ -48,23 +47,17 @@ class EmployeeCrud
         return (bool)$result;
     }
 
-    function updateEmployee($id, $email, $name, $department_id, $picture): bool|null
+    function updateEmployee($id, $name, $department_id, $about, $picture): bool
     {
         $conn = establishConnection();
         try {
-            $employee = $conn->query("SELECT * FROM employee WHERE email = '$email'");
+            $employee = $conn->query("SELECT * FROM employee WHERE id = '$id'");
             if ($employee && $employee->num_rows > 0) {
-                $result = $employee->fetch_assoc();
-                $updatedEmployee = $result[0];
-                if ($updatedEmployee['name'] !== $name)
-                    $updatedEmployee['name'] = $name;
-                if ($updatedEmployee['department_id'] !== $department_id)
-                    $updatedEmployee['department_id'] = $department_id;
-                if ($updatedEmployee['picture'] !== $picture)
-                    $updatedEmployee['picture'] = $picture;
-                $result = $conn->query("UPDATE employee SET $updatedEmployee WHERE email = '$email'");
+                $result = $conn->query("UPDATE employee SET name='$name',department_id=$department_id,about='$about',picture='$picture' WHERE id = $id");
                 if ($result) {
-                    return $updatedEmployee;
+                    return true;
+                } else {
+                    return false;
                 }
             }
         } catch (exception $e) {
@@ -72,14 +65,14 @@ class EmployeeCrud
         } finally {
             $conn->close();
         }
-        return null;
+        return false;
     }
 
     function deleteEmployee($id): bool|null
     {
         $conn = establishConnection();
         try {
-            $result = $conn->query("DELETE FROM employee WHERE id = '$id'");
+            $result = $conn->query("DELETE FROM employee WHERE id = $id");
         } catch (Exception $e) {
             echo $e->getMessage();
         } finally {
@@ -88,7 +81,3 @@ class EmployeeCrud
         return (bool)$result;
     }
 }
-
-$inst = new EmployeeCrud();
-$inst->deleteEmployee(1);
-$inst->getAllEmployees();
