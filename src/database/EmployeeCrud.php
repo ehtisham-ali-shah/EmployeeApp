@@ -1,5 +1,5 @@
 <?php
-include_once 'dbmanager.php';
+include_once 'DatabaseManager.php';
 include_once dirname(__DIR__) . '/models/Employee.php';
 
 class EmployeeCrud
@@ -79,5 +79,28 @@ class EmployeeCrud
             $conn->close();
         }
         return (bool)$result;
+    }
+
+    function getEmployeeById($id): ?Employee
+    {
+        $conn = establishConnection();
+        $temp = new Employee();
+        try {
+            $result = $conn->query("SELECT * FROM employee WHERE id = '$id'");
+            if ($result && $result->num_rows > 0) {
+                $employee = $result->fetch_assoc();
+                $temp->setId($employee["id"]);
+                $temp->setName($employee["name"]);
+                $temp->setEmail($employee["email"]);
+                $temp->setDepartment($employee["department_id"]);
+                $temp->setImage($employee["picture"]);
+                $temp->setAbout($employee["about"]);
+            }
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        } finally {
+            $conn->close();
+        }
+        return $temp;
     }
 }

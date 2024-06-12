@@ -1,5 +1,5 @@
 <?php
-include_once 'dbmanager.php';
+include_once 'DatabaseManager.php';
 include_once dirname(__DIR__) . '/models/Department.php';
 
 class DepartmentCrud
@@ -35,7 +35,7 @@ class DepartmentCrud
         try {
             $result = $conn->query("INSERT INTO `department` (`name`) VALUES ('$name')");
         } catch (exception $e) {
-            echo $e->getMessage();
+            return false;
         } finally {
             $conn->close();
         }
